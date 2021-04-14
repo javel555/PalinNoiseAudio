@@ -1,6 +1,8 @@
 // ライブラリ準備
-const ctx = new AudioContext();
+// import SimplexNoise from 'simplex-noise';
+var SimplexNoise = require('simplex-noise');
 const SIMPLEX = new SimplexNoise();
+const ctx = new AudioContext();
 
 // 作る音の長さ
 const frameCount = ctx.sampleRate * 2.0;
@@ -36,7 +38,17 @@ async function setupSample(){
     const buffer = audioBuffer.getChannelData(0);
     for(let i = 0; i < frameCount; i++){
         // バッファにパーリンノイズを書き込み。
-        buffer[i] = SIMPLEX.noise2D(10120, i * 0.008);
+        buffer[i] = SIMPLEX.noise2D(10120, i * 0.008); // -1.0 ～ 1.0 である事
+        /*
+          第１引数はSimplexNoiseに1次元パーリンノイズが無いので、シードとして扱う。
+          iに対する係数で周波数を制御してる。
+          周波数を上げるとホワイトノイズっぽい
+
+          と言うより、周波数の制御を出来るのが特徴と考えた方が良いかもしれない
+        */
+
+        // ただのノイズ 周波数制御が出来ない・・・
+        // buffer[i] = Math.random() * 2 - 1;
     }
 
     return audioBuffer;
