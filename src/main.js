@@ -4,6 +4,10 @@ var SimplexNoise = require('simplex-noise');
 const SIMPLEX = new SimplexNoise();
 const ctx = new AudioContext();
 
+const canvas = document.getElementById('canvas');
+const glCtx = canvas.getContext('2d');
+glCtx.fillStyle = 'rgb(0,128,255);';
+
 // 作る音の長さ
 const frameCount = ctx.sampleRate * 1.0;
 /*
@@ -37,22 +41,43 @@ async function setupSample(){
     const audioBuffer = ctx.createBuffer(1, frameCount, ctx.sampleRate);
     const buffer = audioBuffer.getChannelData(0);
     const seed = Math.random();
-    const color = Math.random();
-    // const pich = Math.floor(Math.random() * 400) + 10;
-    const pich = 220;
+    const s_color = Math.random() * 0.05;
+    const t_color = Math.random() * 0.5;
+    // const s_pich = Math.floor(Math.random() * 400) + 10; // 音の高さも変えたい
+    const s_pich = 240;
+    const t_pich = 0.03;
     for(let i = 0; i < frameCount; i++){
         // バッファにパーリンノイズを書き込み。
-        buffer[i] = SIMPLEX.noise2D(seed, i % pich * color); // bufferは -1.0 ～ 1.0 である事
+        // bufferは -1.0 ～ 1.0 である事
+        buffer[i] = SIMPLEX.noise2D(seed, i % s_pich * s_color); 
+        // buffer[i] = SIMPLEX.noise2D(seed, Math.sin(i * t_pich) * t_color); 
         /*
           第１引数はSimplexNoiseに1次元パーリンノイズが無いので、シードとして扱う。
           iに対する係数で周波数を制御してる。
           周波数を上げるとホワイトノイズっぽい
 
           と言うより、周波数の制御を出来るのが特徴と考えた方が良いかもしれない
+
+          余剰でシードをいじると三角波っぽい
+
         */
 
         // ただのノイズ 周波数制御が出来ない・・・
         // buffer[i] = Math.random() * 2 - 1;
+
+    }
+    glCtx.clearRect(0,0,canvas.width,canvas.height);
+    for(let i=0; i< frameCount; i++){
+      if(i >= canvas.width) break;
+      const x = i;
+      const y = buffer[i] * canvas.height * 0.5 + canvas.height * 0.5;
+      const nx = x+1;
+      const ny = buffer[i+1] * canvas.height * 0.5 + canvas.height * 0.5;
+      glCtx.beginPath();
+      glCtx.moveTo(x,y);
+      glCtx.lineTo(nx,ny);
+      glCtx.stroke();
+      console.log(buffer[i]);
     }
 
     return audioBuffer;
