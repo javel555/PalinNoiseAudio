@@ -5,7 +5,7 @@ const SIMPLEX = new SimplexNoise();
 const ctx = new AudioContext();
 
 // 作る音の長さ
-const frameCount = ctx.sampleRate * 2.0;
+const frameCount = ctx.sampleRate * 1.0;
 /*
   このframeCountは音のバッファ（配列のようなもん）の長さとして使用する
   sampleRateは1秒に何バイト使うか。の情報　この場合２秒分の長さの音を作る
@@ -36,9 +36,13 @@ async function setupSample(){
 
     const audioBuffer = ctx.createBuffer(1, frameCount, ctx.sampleRate);
     const buffer = audioBuffer.getChannelData(0);
+    const seed = Math.random();
+    const color = Math.random();
+    // const pich = Math.floor(Math.random() * 400) + 10;
+    const pich = 220;
     for(let i = 0; i < frameCount; i++){
         // バッファにパーリンノイズを書き込み。
-        buffer[i] = SIMPLEX.noise2D(10120, i * 0.008); // -1.0 ～ 1.0 である事
+        buffer[i] = SIMPLEX.noise2D(seed, i % pich * color); // bufferは -1.0 ～ 1.0 である事
         /*
           第１引数はSimplexNoiseに1次元パーリンノイズが無いので、シードとして扱う。
           iに対する係数で周波数を制御してる。
@@ -69,7 +73,7 @@ function playSample(ctx, audioBuffer){
 }
 
 document.querySelector("#play").addEventListener("click", async ()=>{
-    if(isPlaying) return;
+    if(isPlaying) sampleSource?.stop();
     const sample = await setupSample();
     playSample(ctx, sample);
 });
